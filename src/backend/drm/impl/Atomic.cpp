@@ -1,5 +1,7 @@
 #include <aquamarine/backend/drm/Atomic.hpp>
+#include <algorithm>
 #include <cerrno>
+#include <cmath>
 #include <cstdint>
 #include <cstring>
 #include <drm_mode.h>
@@ -363,9 +365,16 @@ void Aquamarine::CDRMAtomicRequest::addConnectorCursor(Hyprutils::Memory::CShare
                 else {
                     planeProps(connector->crtc->cursor, data.cursorFB, connector->crtc->id, data.cursorPos - data.cursorHotspot);
                     const auto& cursor = connector->crtc->cursor;
-                    if (cursor->props.values.hotspot_x && cursor->props.values.hotspot_y) {
-                        add(cursor->id, cursor->props.values.hotspot_x, (uint64_t)data.cursorHotspot.x);
-                        add(cursor->id, cursor->props.values.hotspot_y, (uint64_t)data.cursorHotspot.y);
+                    const auto  buffer = data.cursorFB ? data.cursorFB->buffer.lock() : nullptr;
+                    if (buffer && cursor->props.values.hotspot_x && cursor->props.values.hotspot_y) {
+                        // The hotspot comes from the client, so keep it inside the image.
+                        const auto inImage = [](double v, double size) -> uint64_t {
+                            if (!std::isfinite(v) || !std::isfinite(size) || size < 1 || v < 0)
+                                return 0;
+                            return (uint64_t)std::lround(std::min(v, size - 1));
+                        };
+                        add(cursor->id, cursor->props.values.hotspot_x, inImage(data.cursorHotspot.x, buffer->size.x));
+                        add(cursor->id, cursor->props.values.hotspot_y, inImage(data.cursorHotspot.y, buffer->size.y));
                     }
                 }
             } else if (data.cursorVisible)
