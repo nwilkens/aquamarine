@@ -6,6 +6,7 @@
 #include <aquamarine/backend/drm/Atomic.hpp>
 #include <aquamarine/allocator/GBM.hpp>
 #include <aquamarine/allocator/DRMDumb.hpp>
+#include <cmath>
 #include <cstdint>
 #include <format>
 #include <hyprutils/math/Mat3x3.hpp>
@@ -2859,6 +2860,13 @@ bool Aquamarine::CDRMOutput::setCursor(SP<IBuffer> buffer, const Vector2D& hotsp
     // already hidden
     if (!buffer && !cursorVisible)
         return true;
+
+    // The hotspot comes from the client and goes to the kernel as a signed 32-bit plane property.
+    const auto fitsInt32 = [](double v) { return std::isfinite(v) && v >= INT32_MIN && v <= INT32_MAX; };
+    if (buffer && (!fitsInt32(hotspot.x) || !fitsInt32(hotspot.y))) {
+        backend->backend->log(AQ_LOG_ERROR, "drm: cursor hotspot out of range");
+        return false;
+    }
 
     state->markCommitted(COutputState::AQ_OUTPUT_STATE_CURSOR_SHAPE);
     if (!buffer)
