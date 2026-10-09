@@ -171,6 +171,15 @@ add_test(
   COMMAND commitThread "commitThread")
 add_dependencies(tests commitThread)
 
+add_executable(cursorPosition "tests/CursorPosition.cpp")
+target_include_directories(cursorPosition PRIVATE "./src/backend/drm" "./src/include")
+target_link_libraries(cursorPosition PRIVATE PkgConfig::deps aquamarine)
+add_test(
+  NAME "cursorPosition"
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests
+  COMMAND cursorPosition "cursorPosition")
+add_dependencies(tests cursorPosition)
+
 # Installation
 install(TARGETS aquamarine)
 install(DIRECTORY "include/aquamarine" DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

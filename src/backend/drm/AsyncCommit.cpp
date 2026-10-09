@@ -9,8 +9,8 @@ using namespace Hyprutils::Memory;
 
 void Aquamarine::CDRMCursorPositionMailbox::store(const Hyprutils::Math::Vector2D& position) {
     m_sequence.fetch_add(1, std::memory_order_acq_rel);
-    m_x.store(sc<int64_t>(position.x), std::memory_order_relaxed);
-    m_y.store(sc<int64_t>(position.y), std::memory_order_relaxed);
+    m_x.store(sc<int64_t>(std::floor(position.x)), std::memory_order_relaxed);
+    m_y.store(sc<int64_t>(std::floor(position.y)), std::memory_order_relaxed);
     m_sequence.fetch_add(1, std::memory_order_release);
 }
 
