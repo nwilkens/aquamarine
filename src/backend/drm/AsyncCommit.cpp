@@ -1,4 +1,5 @@
 #include "AsyncCommit.hpp"
+#include "Shared.hpp"
 
 #include <cerrno>
 #include <thread>
@@ -75,7 +76,7 @@ IDRMCommitSubmitter::SResult Aquamarine::CDRMAsyncCommitData::submit(int drmFD, 
         return {.submitted = false, .error = EINVAL};
 
     if (lateCursor && cursorMailbox && cursorPlaneID && cursorXProp && cursorYProp) {
-        const auto POSITION = cursorMailbox->load() - cursorHotspot;
+        const auto POSITION = cursorPlanePosition(cursorMailbox->load(), cursorHotspot);
         if (!request->addRaw(cursorPlaneID, cursorXProp, sc<uint64_t>(sc<int64_t>(POSITION.x))) ||
             !request->addRaw(cursorPlaneID, cursorYProp, sc<uint64_t>(sc<int64_t>(POSITION.y))))
             return {.submitted = false, .error = EINVAL};

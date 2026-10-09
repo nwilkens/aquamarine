@@ -3,11 +3,19 @@
 #include <iostream>
 #include <format>
 #include <signal.h>
+#include <cmath>
+#include <hyprutils/math/Vector2D.hpp>
 
 namespace Aquamarine {
     bool envEnabled(const std::string& env);
     bool envExplicitlyDisabled(const std::string& env);
     bool isTrace();
+
+    // A cursor plane's CRTC_X/Y. Drivers with hotspot properties add HOTSPOT_X/Y back,
+    // so both are floored alike and sum to the floored pointer position.
+    inline Hyprutils::Math::Vector2D cursorPlanePosition(const Hyprutils::Math::Vector2D& pos, const Hyprutils::Math::Vector2D& hotspot) {
+        return {std::floor(pos.x) - std::floor(hotspot.x), std::floor(pos.y) - std::floor(hotspot.y)};
+    }
 };
 
 #define RASSERT(expr, reason, ...)                                                                                                                                                 \

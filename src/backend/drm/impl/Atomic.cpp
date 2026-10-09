@@ -361,15 +361,15 @@ void Aquamarine::CDRMAtomicRequest::addConnectorCursor(Hyprutils::Memory::CShare
                 if (!data.cursorVisible)
                     planeProps(connector->crtc->cursor, nullptr, 0, {});
                 else {
-                    planeProps(connector->crtc->cursor, data.cursorFB, connector->crtc->id, data.cursorPos - data.cursorHotspot);
+                    planeProps(connector->crtc->cursor, data.cursorFB, connector->crtc->id, cursorPlanePosition(data.cursorPos, data.cursorHotspot));
                     const auto& cursor = connector->crtc->cursor;
                     if (cursor->props.values.hotspot_x && cursor->props.values.hotspot_y) {
-                        add(cursor->id, cursor->props.values.hotspot_x, (uint64_t)(int64_t)data.cursorHotspot.x);
-                        add(cursor->id, cursor->props.values.hotspot_y, (uint64_t)(int64_t)data.cursorHotspot.y);
+                        add(cursor->id, cursor->props.values.hotspot_x, (uint64_t)(int64_t)std::floor(data.cursorHotspot.x));
+                        add(cursor->id, cursor->props.values.hotspot_y, (uint64_t)(int64_t)std::floor(data.cursorHotspot.y));
                     }
                 }
             } else if (data.cursorVisible)
-                planePropsPos(connector->crtc->cursor, data.cursorPos - data.cursorHotspot);
+                planePropsPos(connector->crtc->cursor, cursorPlanePosition(data.cursorPos, data.cursorHotspot));
         }
     } else
         planeProps(connector->crtc->cursor, nullptr, 0, {});
