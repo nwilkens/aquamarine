@@ -759,6 +759,10 @@ bool Aquamarine::CDRMBackend::checkFeatures() {
         impl                         = makeShared<CDRMAtomicImpl>(self.lock());
         drmProps.supportsAsyncCommit = drmGetCap(gpu->fd, DRM_CAP_ATOMIC_ASYNC_PAGE_FLIP, &cap) == 0 && cap == 1;
         atomic                       = true;
+        // Virtual GPUs (virtio-gpu, vmwgfx, qxl) hide their cursor plane
+        // from clients that do not promise to set its hotspot.
+        if (drmSetClientCap(gpu->fd, DRM_CLIENT_CAP_CURSOR_PLANE_HOTSPOT, 1) == 0)
+            backend->log(AQ_LOG_DEBUG, "drm: cursor plane hotspot supported");
         if (!initCommitThread())
             backend->log(AQ_LOG_WARNING, "drm: Failed to create the asynchronous commit worker");
     }
